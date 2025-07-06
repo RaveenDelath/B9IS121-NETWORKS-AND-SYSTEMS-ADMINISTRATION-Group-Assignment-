@@ -1,0 +1,27 @@
+---
+- name: Deploy sample web app in Docker container
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Create app folder on EC2
+      file:
+        path: /home/ubuntu/sample-app
+        state: directory
+        owner: ubuntu
+
+    - name: Copy app files to EC2
+      copy:
+        src: ./sample-app/
+        dest: /home/ubuntu/sample-app/
+        owner: ubuntu
+        mode: 0755
+
+    - name: Build Docker image
+      command: docker build -t sampleapp .
+      args:
+        chdir: /home/ubuntu/sample-app
+
+    - name: Run Docker container
+      command: docker run -d -p 80:80 --name webapp sampleapp
+      ignore_errors: yes
